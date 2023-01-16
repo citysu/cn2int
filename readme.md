@@ -155,3 +155,5 @@ def int2chinese(self, number, lower=True, enumeration=False,
 因为中文数字字符串的合法格式种类较多, 目前还未找到合适的方法对`chinese2int`和`int2chinese`
 进行全面测试. 不确定二者是否存在bug. 尤其是`chinese2int`能否检测出中文数字字符串格式非法的
 所有情况, 还有待商榷.
+
+`example.py`基于cn2int将中文数字字符串转换为非负浮点数.
