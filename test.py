@@ -57,13 +57,17 @@ def test_roman2int():
     print("2. test some invalid Roman numerals.")
     valid_romans = {c2i.int2roman(i): i for i in range(1, 4000)}
     count = 0
+    invalid_count = 0
     for i in range(10000):
         s = "".join(sample(r * 3, randint(1, 21)))
         if valid_romans.get(s):
             continue
-        n = c2i.roman2int(s)
+        try:
+            n = c2i.roman2int(s)
+        except:
+            invalid_count += 1
         count += 1
-        assert n == -1, "s=%s, n=%d" % (s, n)
+    assert count == invalid_count, "some invalid roman numerals are missed."
     print("%d invalid Roman numerals have been tested. some of them may\n"
          "be duplicated" % count)
     print()
@@ -134,12 +138,19 @@ def test_chinese2int(debug=True):
             # 万亿, 亿亿.
             ["三十六万亿一十二亿", "三万亿", "六亿亿", "六千万五亿"],
             # 零
-            ["零零零三百六十一", "零零零", "零三零百六十"]
+            ["零零零三百六十一", "零零零", "零三零百六十",
+             "零零零零零零零零零零零零零零零", "零一零零零零零零零零零零零零零",
+             "零零零零零一二三零零零零零零零"],
+            # enum range
+            ["一九二九八七六五四三二一〇"]
         ]
         for strings in number_strings:
             for s in strings:
-                n = c2i.chinese2int(s)
-                print(s, n)
+                try:
+                    n = c2i.chinese2int(s)
+                    print(s, n)
+                except:
+                    print(s, "---failed---")
             print("+++++++++++++++++")
         print("--- Debug End ---")
 

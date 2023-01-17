@@ -13,7 +13,7 @@ def test_performance_int2chinese():
 
     number = 218123456789
 
-    for i in range(int(2e6)):
+    for i in range(int(2e5)):
         s = c2i.int2chinese(number,
                             lower=True,
                             enumeration=False,
@@ -24,7 +24,7 @@ def test_performance_int2chinese():
             print("\b" * 100, "[%8.4f s](%8d):" % (default_timer() - last, i), flush=True, end="")
     total_time_int2chinese = default_timer() - last
     print("\b" * 100, "[%8.4f s](%8d):" % (total_time_int2chinese, i), flush=True)
-    print("--->", int(2e6 / total_time_int2chinese / 1e3), "k/s")
+    print("--->", int(2e5 / total_time_int2chinese / 1e3), "k/s")
 
 
 def test_performance_chinese():
@@ -34,13 +34,13 @@ def test_performance_chinese():
 
     s = "二千一百八十一亿二千三百四十五万六千七百八十九"
 
-    for i in range(int(2e6)):
+    for i in range(int(2e5)):
         n = c2i.chinese2int(s)
         if i % 10000 == 0:
             print("\b" * 100, "[%8.4f s](%8d):" % (default_timer() - last, i), flush=True, end="")
     total_time_chinese2int = default_timer() - last
     print("\b" * 100, "[%8.4f s](%8d):" % (total_time_chinese2int, i), flush=True)
-    print("--->", int(2e6 / total_time_chinese2int / 1e3), "k/s")
+    print("--->", int(2e5 / total_time_chinese2int / 1e3), "k/s")
 
 
 if __name__ == "__main__":

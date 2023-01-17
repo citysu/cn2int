@@ -33,19 +33,15 @@ def chinese2float(s):
             a = 0
         else:
             a = c2i.chinese2int_traditional(parts[0])
-            if a < 0:
-                return a
         # 小数部分
         if b_length == 0:
             b = 0
         else:
             b = c2i.chinese2int_enumeration(parts[1])
-            if b < 0:
-                return b
         number = a + b / levels[b_length]
         number *= tail
     else:
-        return -1
+        raise ValueError("invalid Chinese numerals")
     return number
 
 
@@ -56,10 +52,6 @@ def chinese2number(s):
     else:
         signed = 1
     n = chinese2float(s)
-    if n == -1:
-        raise Exception("chinese2number: format error.")
-    if n == -2:
-        raise Exception("chinese2number: out of supported range.")
     number = signed * n
     return number
 
@@ -78,7 +70,10 @@ def test_performance_chinese2float():
     s = "四千五百六十七万八千九百八十二点七六五四三二一"
 
     for i in range(int(2e5)):
-        n = chinese2float(s)
+        try:
+            n = chinese2float(s)
+        except:
+            pass
         if i % 10000 == 0:
             print("\b" * 100, "[%8.4f s](%8d):" % (default_timer() - last, i), flush=True, end="")
     total_time_chinese2float = default_timer() - last
@@ -93,7 +88,10 @@ def example():
     print("替换前: ", sentence)
     m = re.findall(pattern, sentence)
     for s in m:
-        sentence = sentence.replace(s, str(chinese2float(s)))
+        try:
+            sentence = sentence.replace(s, str(chinese2float(s)))
+        except:
+            pass
     print("替换后: ", sentence)
 
     print()

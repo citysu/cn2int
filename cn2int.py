@@ -81,7 +81,6 @@ class Cn2Int:
         返回-2, 表示输入的数字字符串对应的整数, 超出了支持的转换范围, 转换失败.
     """
     def __init__(self):
-        """你可能希望用C语言实现cn2int的功能, 所以这里不做任何初始化工作."""
         pass
 
     def convert(self, s):
@@ -123,7 +122,7 @@ class Cn2Int:
             int: 零, 或正整数. 如果返回-1, 那么`s`是一个非法的阿拉伯数字字符串.
         """
         if not s.isdigit():
-            return -1
+            raise ValueError("invalid Chinese numerals")
 
         number = int(s)
         return number
@@ -158,22 +157,19 @@ class Cn2Int:
         number += Table.roman2int[s_upper[s_length - 1]]
 
         if s != self.int2roman(number):
-            return -1
+            raise ValueError("invalid Chinese numerals")
 
         return number
 
-    def chinese2int(self, s, limit=False):
+    def chinese2int(self, s):
         """将中文数字字符串转换为整数.
 
         参数:
             s (string): 中文数字字符串. 例如: "三百二十一". `int2chinese`返回的所有类型
                 中文数字字符串都受到支持.
-            limit (bool): 将返回整数的最大值 限制为和c语言的int32_t类型最大值相同. 你不
-                需要这个参数, 该参数仅为c语言实现提供参考. 默认False.
 
         取值范围:
-            只能是0-1e12内的整数, 包括零但不包含一万亿(1e12). 如果用C语言重新实现, 该范围
-            限制将成为0-2**31以内的整数, 包括零但不包含2**31.
+            只能是0-1e12内的整数, 包括零但不包含一万亿(1e12).
 
         返回:
             int: 零, 或正整数. 如果返回负数, 那么`s`是一个非法的罗马数字字符串. 负数值代表了
@@ -184,15 +180,16 @@ class Cn2Int:
             a, b = Table.chinese2int[s[0]], Table.chinese2int[s[1]]
             # 第一个字符不能是"百千万亿佰仟萬億"
             if a > 10:
-                return -1
+                raise ValueError("invalid Chinese numerals")
             if max(a, b) <= 9:
-                number = self.chinese2int_enumeration(s, limit)
-                # "零零零三百六十一"会被错误的判定为枚举表示. (s.lstrip("零〇")不可行,
-                # e.g. "零三零百六十" => "三零百六十")
-                if number == -1:
-                    number = self.chinese2int_traditional(s, limit)
+                try:
+                    number = self.chinese2int_enumeration(s)
+                except ValueError:
+                    # "零零零三百六十一"会被错误的判定为枚举表示. (s.lstrip("零〇")
+                    # 不可行, e.g. "零三零百六十" => "三零百六十")
+                    number = self.chinese2int_traditional(s)
             else:
-                number = self.chinese2int_traditional(s, limit)
+                number = self.chinese2int_traditional(s)
         else:
             number = Table.chinese2int[s]
         return number
@@ -357,7 +354,7 @@ class Cn2Int:
             s = s[:-1] + "二" if lower else "贰"
         return s
 
-    def chinese2int_enumeration(self, s, limit=False):
+    def chinese2int_enumeration(self, s):
         number = 0
         length = len(s)
         i = 0
@@ -369,22 +366,19 @@ class Cn2Int:
 
             # 枚举表示 下不能出现大于9的单个数字.
             if p > 9:
-                return -1
-
-            # limit 模式下, 不能超过转换范围. 
-            if limit and i == 9:
-                if p > 2 or p == 2 and number >= 147483648:
-                    return -2
-                if length >= 1:
-                    return -2
+                raise ValueError("invalid Chinese numerals")
 
             number += p * m
+
+            # 范围限制
+            if i == 11 and len(s[:length].lstrip("零〇")) > 0:
+                raise OverflowError("the value is out of the supported range")
             m *= 10
             i += 1
 
         return number
 
-    def chinese2int_traditional(self, s, limit=False):
+    def chinese2int_traditional(self, s):
         number = 0
         length = len(s)
 
@@ -434,18 +428,18 @@ class Cn2Int:
                         small += tiny
                     else:
                         # "千百十"顺序出错, e.g. 五百六千
-                        return -1
+                        raise ValueError("invalid Chinese numerals")
                     flag_pair_a = True
                 else:
                     # 出现连续的a(数字).
-                    return -1
+                    raise ValueError("invalid Chinese numerals")
                 flag_pair_b = False
             else:
                 if p == 10000 or p == 100000000:
                     number += small * delimiter
                     small = 0
                     a, b = 0, 1
-                    
+
                     # 万万为亿. e,g 六万万.
                     if p == 10000 and Table.chinese2int[s[length - 1]] == 10000:
                         p = 100000000
@@ -457,29 +451,25 @@ class Cn2Int:
                     else:
                         if delimiter == 100000000:
                             # e.g. 三万亿, 六亿亿, 六千万五亿
-                            return -2
+                            raise OverflowError("the value is out of the supported range")
                         # 此时必定: p=10000, delimiter=10000. 针对"四万五千万"的情形.
                         delimiter = 100000000                    
                 else:
                     if flag_pair_b is False:
                         if p <= b:
                             # e.g 七千一千零一十万
-                            return -1
+                            raise ValueError("invalid Chinese numerals")
                         b = p
                         flag_pair_b = True
                     else:
                         # 出现连续的b(权值).
-                        return -1
+                        raise ValueError("invalid Chinese numerals")
                 flag_pair_a = False
 
         # For use_simple_ten=True, "十"开头的中文数字字符串, 逆序遍历到开头的"十"
         # 后, 会终止循环, 导致"十"无法参与到small的计算中, 所以需要修正下.
         if p == 10:
             small += 10
-        
-        if limit:
-            if small > 21 or (small == 21 and number >= 47483648):
-                return -2
 
         number += small * delimiter
         return number
