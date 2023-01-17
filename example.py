@@ -49,6 +49,21 @@ def chinese2float(s):
     return number
 
 
+def chinese2number(s):
+    if s.startswith("负") or s.startswith("負"):
+        signed = -1
+        s = s[1:]
+    else:
+        signed = 1
+    n = chinese2float(s)
+    if n == -1:
+        raise Exception("chinese2number: format error.")
+    if n == -2:
+        raise Exception("chinese2number: out of supported range.")
+    number = signed * n
+    return number
+
+
 def test():
     print("\n=== test: chinese2float ===")
     s = "四千五百六十七万八千九百八十二点七六五四三二一"
@@ -80,6 +95,19 @@ def example():
     for s in m:
         sentence = sentence.replace(s, str(chinese2float(s)))
     print("替换后: ", sentence)
+
+    print()
+    sentence = "他背负五千六百点九三万元的债务, 他准备跑路了"
+    pattern = "[负負]?[〇零一二两三四五六七八九十百千万亿壹贰叁肆伍陆柒捌玖拾佰仟萬億点點]+(?=元)"
+    print("替换前: ", sentence)
+    m = re.findall(pattern, sentence)
+    for s in m:
+        try:
+            sentence = sentence.replace(s, str(chinese2number(s)))
+        except:
+            pass
+    print("替换后: ", sentence)
+
 
 
 if __name__ == "__main__":
