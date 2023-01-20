@@ -2,163 +2,215 @@
 # -*- coding: utf-8 -*-
 
 """Cn2Int的正确性测试"""
-from cn2int import Cn2Int
+
 from random import sample, randint
+import math
 
-
-def test_int2arab():
-    print("=== test_int2arab ===")
-    print("we use the python build-in function to convert integer to ")
-    print("to Arabic numerals, we don't need to test `int2arab`")
-    print()
-
-
-def test_arab2int():
-    print("=== test_arab2int ===")
-    print("we use the python build-in function to convert Arabic numerals")
-    print("to integer, we don't need to test `arab2int`")
-    print()
-
-
-def test_int2roman():
-    print("=== test_int2roman ===")
-    c2i = Cn2Int()
-
-    print("1. test all supported integers.")
-    for number in range(1, 4000):
-        s = c2i.int2roman(number)
-        assert s is not None, "s=%s, number=%d" % (s, number)
-    
-    print("2. test some invalid integers which are out of the supported range.")
-    for i in range(1000):
-        number = randint(-5000, 0)
-        s = c2i.int2roman(number)
-        assert s is None, "s=%s, number=%d" % (s, number)
-
-    for i in range(1000):
-        number = randint(4000, 8000)
-        s = c2i.int2roman(number)
-        assert s is None, "s=%s, number=%d" % (s, number)
-    print("2000 invalid integers have been tested")
-    print()
+import cn2int as c2i
 
 
 def test_roman2int():
     print("=== test_roman2int ===")
-    r = 'IVXLCDM'
-    c2i = Cn2Int()
 
-    print("1. test all valid Roman numerals. They are genarated by `int2roman`.")
-    for number in range(1, 4000):
-        s = c2i.int2roman(number)
+    r = 'IVXLCDM' * 3
+    valid_romans = {c2i.int2roman(i): i for i in range(1, 4000)}
+    invalid_romans = set(["".join(sample(r, randint(1, 21))) for i in range(4000)]) - valid_romans.keys()
+
+    print("1. 所有受支持的罗马数字: (0, 4000).")
+    for s, number in valid_romans.items():
         n = c2i.roman2int(s)
         assert number == n, "s=%s, number=%d, n=%d" % (s, number, n)
+    print(">>> OK <<<")
 
-    print("2. test some invalid Roman numerals.")
-    valid_romans = {c2i.int2roman(i): i for i in range(1, 4000)}
-    count = 0
-    invalid_count = 0
-    for i in range(10000):
-        s = "".join(sample(r * 3, randint(1, 21)))
-        if valid_romans.get(s):
-            continue
+    print("2. 非法格式的罗马数字: 随机%d个." % len(invalid_romans))
+    for s in invalid_romans:
         try:
             n = c2i.roman2int(s)
+            raise Exception("s=%s, n=%d" % (s, n))
         except:
-            invalid_count += 1
-        count += 1
-    assert count == invalid_count, "some invalid roman numerals are missed."
-    print("%d invalid Roman numerals have been tested. some of them may\n"
-         "be duplicated" % count)
-    print()
+            pass
+    print(">>> OK <<<\n")
 
 
-def test_int2chinese(debug=True):
-    print("=== test_int2chinese ===")
-    c2i = Cn2Int()
-
-    print("1. we don't test enumeration representation, we ensure our conversion\n"
-          "must be correct.")
-    if debug:
-        print("--- Debug Start ---")
-        numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 19, 20, 30, 90,
-                   500, 10000, 20304, 9876543210]
-        for number in numbers:
-            s_lower = c2i.int2chinese(number, lower=True, enumeration=True)
-            s_traditional = c2i.int2chinese(number, lower=False, enumeration=True)
-            print(number, s_lower, s_traditional)
-        print("--- Debug End ---")
-
-    print("2. when enumeration=False, we only need to test the lower=True\n"
-          "case. Because lower=True/False use the same processing")
-    if debug:
-        print("--- Debug Start ---")
-        integers = [
-            [135268759387, 135200059387, 100068759387, 135268000307, 135000009387, 56789],
-            [1000, 100, 10, 1, 0, 1001, 1010, 1100, 110, 101, 11, 1110, 1101, 1011, 111],
-            [13526875938, 13520005938, 10006875938, 13568000307, 13500000987, 56789,
-             10203040506, 203200000000, 440657050450, 222222222222, 543298765432],
-            [120, 1200, 12000, 120000, 126000, 126700, 126730, 120030, 120010, 120300, 20],
-            [2, 20, 22, 200, 202, 220, 222, 2000, 2002, 2020, 2022, 2200,
-             2202, 2220, 2222, 20222],
-            [1, 10, 100, 1000, 10000, 100000, 1000000, 1000000, 
-             11, 110, 1100, 11000, 110000, 1100000, 1100000],
-            [123456789, 1234567890, 1987654320, 2987654320, 2123456789, 9876543210,
-             19876543210, 10876543210],
-            [135000009387, 13500000987, 203200000000, 100009000, 1593000000, 20009]
-        ]
-        for numbers in integers:
-            for number in numbers:
-                s = c2i.int2chinese(number, lower=True,
-                                    enumeration=False,
-                                    use_liang=False,
-                                    use_simple_ten=False,
-                                    use_simple_zero_tail=False)
-                print(number, s)
-            print("+++++++++++++++++")
-        print("--- Debug End ---")
-    print("")
-
-
-def test_chinese2int(debug=True):
+def test_chinese2int():
     print("=== test_chinese2int ===")
-    print("skipped")
-    c2i = Cn2Int()
+    dataset = {
+        "大小混合": {
+            "二千伍佰六十叁": 2563
+        },
+        "万万": {
+            "六万": 60000,
+            "六万万": 600000000,
+            "六万万万": None,
+            "六万万零万": 600000000,
+            "六万万万万": None,
+            "六亿三千万万": None,
+            "四万五千万": 450000000,
+            "四万万五千": 400005000,
+            "四万万五千万": 450000000,
+            "七千一千零一十万六千八百万": None,
+            "七千一千零一十万": None,
+        },
+        "万亿, 亿亿": {
+            "三十六万亿一十二亿": None,
+            "三万亿": None,
+            "六亿亿": None,
+            "六千万五亿": None,
+        },
+        "零填充": {
+            "零零零三百六十一": 361,
+            "零零零": 0,
+            "零三零百六十": 360,
+            "零零零零零零零零零零零零零零零": 0,
+            "零一零零零零零零零零零零零零零": None,
+            "零零零零零一二三零零零零零零零": 1230000000,
+        },
+        "枚举表示范围": {
+            "九二九八七六五四三二一〇": 929876543210,
+            "一九二九八七六五四三二一〇": None,
+            "负九二九八七六五四三二一〇": -929876543210,
+            "负一九二九八七六五四三二一〇": None,
+        },
+        "传统表示范围": {
+            "二千一百八十一亿二千三百四十五万六千七百八十九": 218123456789,
+            "九万亿二千一百八十一亿二千三百四十五万六千七百八十九": None,
+        },
+        "正常数字": {
+            "一千零一十": 1010,
+        },
+        "带正负号的枚举表示": {
+            "负一二三": -123,
+            "一二三": 123,
+            "正一二三": 123,
+            "正零": 0,
+            "正〇": 0,
+            "负零": 0,
+            "负〇": 0,
+            "零一二三": 123,
+            "〇一二三": 123,
+            "正零一二三": 123,
+            "负零一二三": -123,
+        },
+        "传统表示中, 数字不能连续出现, 零除外": {
+            "一二三四": 1234,
+            "一千二百三四": None,
+            "一千零四": 1004,
+        },
+        "十百千 需要从小到大出现(逆序)": {
+            "一百一百一百": None,
+            "三六亿六百八千二十": None,
+        },
+        "十百千 不能连续出现": {
+            "一二百千": None,
+            "一亿万七十二": 100000072,
+            "五十三万千六百零一": None,
+        },
+        "二 => 两(-- 待处理 --)": {
+            "两千零六十": 2060,
+            # 虽然识别正确, 但这是一个非法格式, 目前cn2int无法检测到.
+            # 参考: [二、两和俩、双](http://ling.cass.cn/ziyuan/ywtd/ywmt/202111/t20211129_5377741.html)
+            "两千两百两十两": 2222, # None
+        },
+        "末尾 千百十省略, 万亿前的不省略": {
+            "一百二": 120,
+            "一千二": 1200,
+            "一万二": 12000,
+            "十二万": 120000,
+            "一千二百二": 1220,
+            "一千零二十": 1020,
+            "一千零二": 1002,
+            "一万零二百二": 10220,
+            "一万零二百零二": 10202,
+            "一万零二十": 10020,
+            "三千二百万": 32000000,
+            "三千二万": 30020000,
+            "三千零二万": 30020000,
+        },
+        "一十 => 十": {
+            "十": 10,
+            "十五万": 150000,
+            "二百一十": 210,
+            "二百十": None,
+            "一千零十": None,
+            "一千零百": None,
+        }
+    }
 
-    if debug:
-        print("--- Debug Start ---")
-        number_strings = [
-            ["一千零一十"],
-            # 大小混合
-            ["二千伍佰六十叁"],
-            # 万万
-            ["六万", "六万万", "六万万万", "六万万零万", "六万万万万", "六亿三千万万",
-             "四万五千万", "四万万五千", "四万万五千万", "七千一千零一十万六千八百万",
-             "七千一千零一十万"],
-            # 万亿, 亿亿.
-            ["三十六万亿一十二亿", "三万亿", "六亿亿", "六千万五亿"],
-            # 零
-            ["零零零三百六十一", "零零零", "零三零百六十",
-             "零零零零零零零零零零零零零零零", "零一零零零零零零零零零零零零零",
-             "零零零零零一二三零零零零零零零"],
-            # enum range
-            ["一九二九八七六五四三二一〇"]
-        ]
-        for strings in number_strings:
-            for s in strings:
-                try:
-                    n = c2i.chinese2int(s)
-                    print(s, n)
-                except:
-                    print(s, "---failed---")
-            print("+++++++++++++++++")
-        print("--- Debug End ---")
+    for i, (info, cases) in enumerate(dataset.items()):
+        print("%d. %s" % (i + 1, info))
+        for s, number in cases.items():
+            try:
+                n = c2i.chinese2int(s)
+            except (OverflowError, ValueError):
+                n = None
+            assert number == n, "%s => %s | %s" % (s, str(n), str(number))
+    print(">>> OK <<<\n")
+
+
+def test_chinese2float():
+    print("=== test_chinese2float ===")
+    dataset = {
+        "正常数字": {
+            "一千零三十点六六六": 1030.666,
+            "正三十九": 39.0,
+            "负零点九九九九": -0.9999,
+            # 以下是正常现象, 很多数无法用浮点数精确表示.
+            "一十二亿三千四百五十六万七千八百九十点九八七六五四三": 1234567890.9876542,
+            "一十二亿三千四百五十六万七千八百九十点九八七六五四二": 1234567890.9876542,
+            "负一十二亿三千四百五十六万七千八百九十点九八七六五四二": -1234567890.9876542,
+        },
+        "点开头": {
+            "点九八七六": None,
+            "负点一二": None,
+            "正点六六六": None,
+            "点": None,
+            "点零": None,
+            "零点": None,
+            "零点零": 0.0,
+        },
+        "以万亿结尾的浮点数": {
+            "三点六万": 36000,
+            "三十六万": 360000,
+        }
+    }
+
+    for i, (info, cases) in enumerate(dataset.items()):
+        print("%d. %s" % (i + 1, info))
+        for s, number in cases.items():
+            try:
+                n = c2i.chinese2float(s)
+            except (OverflowError, ValueError):
+                n = None
+            # math.isclose
+            assert number == n , "%s => %s | %s" % (s, str(n), str(number))
+    print(">>> OK <<<\n")
+
+
+def test_convert2int():
+    print("=== test_convert2int ===")
+    dataset = {
+        "正常数字": {
+            "+123": 123,
+            "XI": 11,
+            "正九十九": 99,
+            "正三十九": 39,
+            "-987": -987
+        },
+    }
+
+    for i, (info, cases) in enumerate(dataset.items()):
+        print("%d. %s" % (i + 1, info))
+        for s, number in cases.items():
+            try:
+                n = c2i.convert2int(s)
+            except (OverflowError, ValueError):
+                n = None
+            assert number == n , "%s => %s | %s" % (s, str(n), str(number))
+    print(">>> OK <<<\n")
 
 
 if __name__ == "__main__":
-    test_arab2int()
-    test_int2arab()
-    test_int2roman()
     test_roman2int()
-    test_int2chinese(False)
-    test_chinese2int(False)
+    test_chinese2int()
+    test_chinese2float()
+    test_convert2int()

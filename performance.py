@@ -3,13 +3,12 @@
 
 from timeit import default_timer
 
-from cn2int import Cn2Int
+import cn2int as c2i
 
 
 def test_performance_int2chinese():
     print("=== performance: int2chinese ===")
     last = default_timer()
-    c2i = Cn2Int()
 
     number = 218123456789
 
@@ -19,7 +18,7 @@ def test_performance_int2chinese():
                             enumeration=False,
                             use_liang=False,
                             use_simple_ten=False,
-                            use_simple_zero_tail=False)
+                            use_simple_zero_tail=False, width=30)
         if i % 10000 == 0:
             print("\b" * 100, "[%8.4f s](%8d):" % (default_timer() - last, i), flush=True, end="")
     total_time_int2chinese = default_timer() - last
@@ -27,22 +26,32 @@ def test_performance_int2chinese():
     print("--->", int(2e5 / total_time_int2chinese / 1e3), "k/s")
 
 
-def test_performance_chinese():
-    print("=== performance: chinese2int ===")
+def test_template(func, s):
+    print("=== performance: %s ===" % func.__name__)
     last = default_timer()
-    c2i = Cn2Int()
-
-    s = "二千一百八十一亿二千三百四十五万六千七百八十九"
 
     for i in range(int(2e5)):
-        n = c2i.chinese2int(s)
+        n = func(s)
         if i % 10000 == 0:
             print("\b" * 100, "[%8.4f s](%8d):" % (default_timer() - last, i), flush=True, end="")
-    total_time_chinese2int = default_timer() - last
-    print("\b" * 100, "[%8.4f s](%8d):" % (total_time_chinese2int, i), flush=True)
-    print("--->", int(2e5 / total_time_chinese2int / 1e3), "k/s")
+    total_time = default_timer() - last
+    print("\b" * 100, "[%8.4f s](%8d):" % (total_time, i), flush=True)
+    print("--->", int(2e5 / total_time / 1e3), "k/s")
+
+
+def test_performance_chinese2int():
+    func = c2i.chinese2int
+    s = "二千一百八十一亿二千三百四十五万六千七百八十九"
+    test_template(func, s)
+
+
+def test_performance_chinese2float():
+    func = c2i.chinese2float
+    s = "四千五百六十七万八千九百八十二点七六五四三二一"
+    test_template(func, s)
 
 
 if __name__ == "__main__":
     test_performance_int2chinese()
-    test_performance_chinese()
+    test_performance_chinese2int()
+    test_performance_chinese2float()
