@@ -48,6 +48,10 @@ class Table:
                    "伍": 5, "陆": 6, "柒": 7, "捌": 8, "玖": 9,
                    "拾": 10, "佰": 100, "仟": 1000, "萬": 10000,
                    "億": 100000000,
+                   "０": 0, "１": 1, "２": 2, "３": 3, "４": 4,
+                   "５": 5, "６": 6, "７": 7, "８": 8, "９": 9,
+                   "0": 0, "1": 1, "2": 2, "3": 3, "4": 4,
+                   "5": 5, "6": 6, "7": 7, "8": 8, "9": 9,
                    "两": 2,
                    "正": -10, "负": -1, "負": -1, "点": -100, "點": -100}
     levels = [10**i for i in range(13)]
@@ -333,7 +337,6 @@ def chinese2float(s):
         else:
             b = chinese2int_enumeration(parts[1])
         number = a + b / Table.levels[b_length]
-        
     else:
         raise ValueError("invalid Chinese numerals")
 
