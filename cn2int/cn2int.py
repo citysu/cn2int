@@ -10,7 +10,7 @@ Home: https://github/citysu/cn2int
 import re
 
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 
 __all__ = [
@@ -513,6 +513,8 @@ def float2chinese(number, lower=True, precision=6,
     b = int(n)
     n -= b
     n *= 10
+    if (n - int(n)) * 10 > 5:
+        n += 1
     if n >= 5:
         b += 1
         if int(b / level) == 1:
