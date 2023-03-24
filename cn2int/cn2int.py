@@ -10,7 +10,7 @@ Home: https://github/citysu/cn2int
 import re
 
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 
 __all__ = [
@@ -311,6 +311,7 @@ def chinese2float(s):
 
     number = 0
     tail = 1
+    s_original = s
 
     # "六点三万人", "五点八亿斤"
     p = Table.chinese2int.get(s[-1])
@@ -322,7 +323,7 @@ def chinese2float(s):
     count = len(parts)
 
     if count == 1:
-        number = chinese2int(parts[0]) * 1.0
+        number = chinese2int(s_original) * 1.0
     elif count == 2:
         a_length = len(parts[0])
         b_length = len(parts[1])
@@ -337,10 +338,10 @@ def chinese2float(s):
         else:
             b = chinese2int_enumeration(parts[1])
         number = a + b / Table.levels[b_length]
+        number *= tail
     else:
         raise ValueError("invalid Chinese numerals")
 
-    number *= tail
     number *= signed
     return number
 
