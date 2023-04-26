@@ -10,7 +10,7 @@ Home: https://github/citysu/cn2int
 import re
 
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 
 __all__ = [
@@ -435,14 +435,13 @@ def int2chinese(number, lower=True, enumeration=False,
             n = -n
         if n == 0:
             s = digits[0]
-            i += 1
         while n > 0:
             p = n % 10
             n //= 10
             s = digits[p] + s
             i += 1
-        if i < width:
-            s = digits[0] * (width - i) + s
+        if len(s) < width:
+            s = digits[0] * (width - len(s)) + s
     else:
         if lower:
             digits = Table.lower_traditional
@@ -457,7 +456,6 @@ def int2chinese(number, lower=True, enumeration=False,
             n = -n
         if n == 0:
             s = digits[0]
-            i += 1
         while n > 0:
             p = n % 10000
             n //= 10000
@@ -471,8 +469,8 @@ def int2chinese(number, lower=True, enumeration=False,
             s = chinese_simple_ten(s, p)
         if use_simple_zero_tail:
             s = chinese_simple_zero_tail(s, lower)
-        if i < width:
-            s = digits[0] * (width - i) + s
+        if len(s) < width:
+            s = digits[0] * (width - len(s)) + s
     s = sign + s
     return s
 
