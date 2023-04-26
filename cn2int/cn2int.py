@@ -449,7 +449,7 @@ def int2chinese(number, lower=True, enumeration=False,
             units = Table.lower_uint
             delimiters = Table.lower_delimiter
         else:
-            digits = Table.lower_traditional
+            digits = Table.upper_traditional
             units = Table.upper_unit
             delimiters = Table.upper_delimiter
         if n < 0:
