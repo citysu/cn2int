@@ -420,6 +420,7 @@ def int2chinese(number, lower=True, enumeration=False,
 
     n, s = number, ""
     sign = ""
+    i = 0
 
     if enumeration:
         if lower:
@@ -434,7 +435,7 @@ def int2chinese(number, lower=True, enumeration=False,
             n = -n
         if n == 0:
             s = digits[0]
-        i = 0
+            i += 1
         while n > 0:
             p = n % 10
             n //= 10
@@ -456,7 +457,7 @@ def int2chinese(number, lower=True, enumeration=False,
             n = -n
         if n == 0:
             s = digits[0]
-        i = 0
+            i += 1
         while n > 0:
             p = n % 10000
             n //= 10000
